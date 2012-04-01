@@ -1,0 +1,31 @@
+What?
+
+mausradbeschleuniger is a simple mouse wheel accelerator for Linux.
+
+
+How?
+
+mausradbeschleuniger grabs the raw mouse events using the /dev/input/eventX device
+If the time difference between consecutive mouse wheel events in the same direction falls below an adjustable threshold, additional mouse wheel events are fed to the kernel by the /dev/uinput device.
+This small tool is written in python, using the fantastic pyinputevent classes from https://github.com/rmt/pyinputevent
+
+Usage
+
+Make sure your kernel has the /dev/uinput enabled (or uinput loaded as module). Find out which input device your mouse is (try: cat /dev/input/eventX, if you see some garbled text while moving the mouse, it's the right device).
+Since /dev/input/eventX and /dev/uinput are read/writeable only by root by default, it might be a good idea to edit your udev configuration to allow a normal user access to it.
+See http://sourceforge.net/apps/mediawiki/gizmod/index.php?title=HOWTO_-_Setting_Input_Device_Permissions_-_Creating_a_udev_Rule for further information.
+My current /etc/udev/rules.d/evdev_uinput.rules looks like this (allowing all users in the "input" group rw access to both devices):
+
+KERNEL=="event*",       NAME="input/%k", MODE:="660", GROUP="input"
+KERNEL=="uinput",       NAME="%k", MODE:="660", GROUP="input"
+
+start mausradbeschleuinger:
+
+python ./mausradbeschleuniger <input device> <threshold (ms)> <speedup>
+
+e.g.
+
+python ./mausradbeschleuniger /dev/input/event4 20 4
+(threshold 20ms, 4 additional events will be sent for every single wheel event)
+
+Starting with speedup=0 will output the actual time differences and print out if the acceleration would engage.
